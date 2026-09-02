@@ -7,7 +7,8 @@ import { isInsideDiscord } from "./lib/api.js";
  */
 export function createSocket(sessionToken) {
   const inside = isInsideDiscord();
-  return io(inside ? window.location.origin : "http://localhost:3001", {
+  const sameOrigin = inside || import.meta.env.PROD;
+  return io(sameOrigin ? window.location.origin : "http://localhost:3001", {
     path: inside ? "/.proxy/socket.io" : "/socket.io",
     autoConnect: false,
     transports: ["websocket", "polling"],

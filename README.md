@@ -49,20 +49,20 @@ Testes do motor: `npm test`
 1. Cria uma aplicação em [https://discord.com/developers/applications](https://discord.com/developers/applications)
 2. Em **OAuth2**, copia o Client ID e o Client Secret para o `.env`
 3. Ativa **Activities**
-4. URL Mappings (com Cloudflare tunnel ou o teu domínio):
+4. URL Mappings (Activities → URL Mappings). **Sem `https://` no Target.** Coloca os prefixos mais longos **acima** de `/`:
 
-| Prefix | Target |
-| --- | --- |
-| `/` | `https://<tunnel>:5173` (dev) ou a origem do frontend |
-| `/api` | `https://<tunnel>:3001` |
-| `/socket.io` | `https://<tunnel>:3001` |
+| Prefix | Target (dev / túnel) | Target (Render) |
+| --- | --- | --- |
+| `/socket.io` | `<túnel>/socket.io` | `<serviço>.onrender.com/socket.io` |
+| `/api` | `<túnel>/api` | `<serviço>.onrender.com/api` |
+| `/` | `<túnel>` (Vite 5173) | `<serviço>.onrender.com` |
 
 5. Scopes OAuth usados: `identify`, `guilds`
 6. Comando **`/playuno`** (abre a Activity neste canal):
    1. Em **Bot**, cria o bot e copia o token para `DISCORD_BOT_TOKEN`
    2. Em **General Information**, copia a **Public Key** para `DISCORD_PUBLIC_KEY`
    3. Convida a app ao servidor: `https://discord.com/oauth2/authorize?client_id=<CLIENT_ID>&scope=bot%20applications.commands`
-   4. Expõe o backend em HTTPS (túnel ou domínio) e em **General Information → Interactions Endpoint URL** mete `https://<o-teu-dominio>/api/interactions`
+   4. Expõe o backend em HTTPS e em **General Information → Interactions Endpoint URL** mete `https://<serviço>.onrender.com/api/interactions`
    5. Reinicia o servidor — ele regista `/playuno`. No Discord, escreve `/playuno` para abrir a mesa
 
 O SDK:
@@ -112,6 +112,43 @@ Baralho de 108 cartas, cores, Skip, Reverse, +2, Wild e +4.
 - UNO: grita com 2 ou 1 carta; outro jogador pode **Apanhar UNO** (+2)
 - Jogador que desliga: a vez passa automaticamente ao fim de ~8 segundos
 - Pontos no fim: números = face, ações = 20, coringas = 50
+
+## Render + UptimeRobot
+
+Um único Web Service: o Express serve a API, o Socket.io e o `client/dist`.
+
+1. [Render](https://render.com) → **New → Web Service** → liga o repo `joanafmaia/UNO` (branch `main`)
+2. **Build Command:** `npm run build` · **Start Command:** `npm start`
+3. **Health Check Path:** `/api/health`
+4. Variáveis (Environment):
+
+| Chave | Notas |
+| --- | --- |
+| `NODE_ENV` | `production` (o Render já mete isto) |
+| `ALLOW_DEV_MOCK` | `false` |
+| `MONGODB_URI` | string do Atlas (`...mongodb.net/uno`) |
+| `DISCORD_CLIENT_ID` | o mesmo Client ID da app |
+| `VITE_DISCORD_CLIENT_ID` | **igual** ao Client ID — precisa de existir **no build** |
+| `DISCORD_CLIENT_SECRET` | OAuth2 |
+| `DISCORD_BOT_TOKEN` | para registar `/playuno` |
+| `DISCORD_PUBLIC_KEY` | Interactions Endpoint |
+
+5. No Atlas → **Network Access** → permite `0.0.0.0/0` (os IPs do Render mudam)
+6. Depois do deploy, no Discord:
+   - URL Mappings para `<serviço>.onrender.com` (tabela acima)
+   - **Interactions Endpoint URL:** `https://<serviço>.onrender.com/api/interactions`
+7. Se mudares `VITE_DISCORD_CLIENT_ID`, faz **Manual Deploy** (a variável entra no `vite build`)
+
+### Manter acordado (plano Free)
+
+O Render Free adormece ~15 min sem tráfego. No [UptimeRobot](https://uptimerobot.com):
+
+- Monitor: **HTTPS**
+- URL: `https://<serviço>.onrender.com/api/health`
+- Intervalo: **5 minutos**
+- Keyword (opcional): `"ok":true`
+
+Não uses a raiz `/` — devolve o HTML da app. O health confirma Node + Mongo.
 
 ## Estrutura
 

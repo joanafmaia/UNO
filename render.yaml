@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: uno-activity
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: ALLOW_DEV_MOCK
+        value: "false"
+      - key: MONGODB_URI
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: VITE_DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: DISCORD_PUBLIC_KEY
+        sync: false
