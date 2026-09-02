@@ -1,18 +1,11 @@
 const API = "https://discord.com/api/v10";
 
-const PLAYUNO = {
+/** Entry point da Activity: o Discord abre a mesa sem passar pelo nosso servidor. */
+const PLAYUNO_ENTRY = {
   name: "playuno",
   description: "Abre a mesa de UNO",
-  type: 1,
-  description_localizations: {
-    "pt-BR": "Abre a mesa de UNO",
-    "en-US": "Open the UNO table",
-    "en-GB": "Open the UNO table",
-  },
-};
-
-const PLAYUNO_GLOBAL = {
-  ...PLAYUNO,
+  type: 4,
+  handler: 2,
   integration_types: [0, 1],
   contexts: [0, 1, 2],
 };
@@ -49,48 +42,53 @@ async function discord(path, token, { method = "GET", body } = {}) {
   return data;
 }
 
-async function registerGlobal(auth) {
-  const commands = await discord(`/applications/${auth.appId}/commands`, auth.token);
-  const existing = Array.isArray(commands)
-    ? commands.find((c) => c.name === PLAYUNO.name && c.type === 1)
-    : null;
-
-  if (existing) {
-    await discord(`/applications/${auth.appId}/commands/${existing.id}`, auth.token, {
-      method: "PATCH",
-      body: PLAYUNO_GLOBAL,
-    });
-    console.log("[UNO] Comando /playuno actualizado (global)");
-  } else {
-    await discord(`/applications/${auth.appId}/commands`, auth.token, {
-      method: "POST",
-      body: PLAYUNO_GLOBAL,
-    });
-    console.log("[UNO] Comando /playuno registado (global — pode demorar até 1h)");
-  }
-}
-
-async function registerInGuilds(auth) {
+async function clearGuildOverrides(auth) {
   const guilds = await discord("/users/@me/guilds", auth.token);
   if (!Array.isArray(guilds) || guilds.length === 0) {
     console.warn("[UNO] O bot não está em nenhum servidor — convence com scope bot + applications.commands");
     return 0;
   }
-
   let ok = 0;
   for (const guild of guilds) {
     try {
       await discord(`/applications/${auth.appId}/guilds/${guild.id}/commands`, auth.token, {
         method: "PUT",
-        body: [PLAYUNO],
+        body: [],
       });
       ok += 1;
-      console.log(`[UNO] /playuno no servidor ${guild.name || guild.id}`);
+      console.log(`[UNO] Comandos de servidor limpos em ${guild.name || guild.id}`);
     } catch (err) {
-      console.error(`[UNO] Falha a registar /playuno em ${guild.id}:`, err.details || err.message);
+      console.error(`[UNO] Falha a limpar comandos em ${guild.id}:`, err.details || err.message);
     }
   }
   return ok;
+}
+
+async function registerGlobalEntryPoint(auth) {
+  const commands = await discord(`/applications/${auth.appId}/commands`, auth.token);
+  const list = Array.isArray(commands) ? commands : [];
+  const chat = list.find((c) => c.name === "playuno" && c.type === 1);
+  const entry = list.find((c) => c.type === 4);
+
+  if (chat) {
+    await discord(`/applications/${auth.appId}/commands/${chat.id}`, auth.token, { method: "DELETE" });
+    console.log("[UNO] Removido /playuno antigo (slash)");
+  }
+
+  if (entry) {
+    await discord(`/applications/${auth.appId}/commands/${entry.id}`, auth.token, {
+      method: "PATCH",
+      body: PLAYUNO_ENTRY,
+    });
+    console.log("[UNO] Entry point da Activity → /playuno (o Discord abre a mesa)");
+    return;
+  }
+
+  await discord(`/applications/${auth.appId}/commands`, auth.token, {
+    method: "POST",
+    body: PLAYUNO_ENTRY,
+  });
+  console.log("[UNO] Entry point /playuno criado");
 }
 
 export async function registerPlayUnoCommand() {
@@ -100,7 +98,14 @@ export async function registerPlayUnoCommand() {
     return false;
   }
 
-  const guilds = await registerInGuilds(auth);
-  await registerGlobal(auth);
-  return guilds > 0;
+  try {
+    await registerGlobalEntryPoint(auth);
+  } catch (err) {
+    console.error("[UNO] Falha a registar o entry point /playuno:", err.details || err.message);
+    console.error("[UNO] Confirma Activities → Enable Activities no Developer Portal");
+    return false;
+  }
+
+  await clearGuildOverrides(auth);
+  return true;
 }
