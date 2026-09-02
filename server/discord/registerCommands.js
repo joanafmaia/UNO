@@ -5,9 +5,9 @@ const PLAYUNO = {
   description: "Abre a mesa de UNO",
   type: 1,
   description_localizations: {
-    "pt-PT": "Abre a mesa de UNO",
     "pt-BR": "Abre a mesa de UNO",
-    en: "Open the UNO table",
+    "en-US": "Open the UNO table",
+    "en-GB": "Open the UNO table",
   },
 };
 
