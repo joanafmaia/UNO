@@ -90,151 +90,145 @@ export default function Lobby({
             {eventLine && <p className="lobby-event">{eventLine}</p>}
           </div>
 
-          <div className="lobby-body">
-            <div className="lobby-seats-col">
-              <ul className="lobby-seats">
-                {state.players.map((p) => (
-                  <li key={p.discordId} className="lobby-seat">
-                    <AvatarFrame id={p.frame} src={avatarSrc(p)} size="sm" />
-                    <span className="mt-1 max-w-[88px] truncate text-xs font-black">
-                      {p.isBot ? t("lobby.botName") : p.displayName || p.username}
-                    </span>
-                    {p.equippedTitle && (
-                      <span className="text-[9px] font-black uppercase text-uno-yellow">{t(`titles.${p.equippedTitle}`)}</span>
-                    )}
-                    {p.isHost && <span className="lobby-host">{t("lobby.hostBadge")}</span>}
-                    {p.seriesWins > 0 && (
-                      <span className="text-[10px] font-black text-uno-yellow">
-                        {t("lobby.seriesScore", { count: p.seriesWins })}
-                      </span>
-                    )}
-                  </li>
-                ))}
-                {waiting &&
-                  Array.from({ length: emptyCount }, (_, i) => (
-                    <li key={`empty-${i}`} className="lobby-seat lobby-seat-empty">
-                      <span className="lobby-empty-pip">?</span>
-                      <span className="text-[10px] font-bold uppercase text-white/50">{t("lobby.emptySeat")}</span>
-                    </li>
-                  ))}
-              </ul>
-              {(state.spectators || []).length > 0 && (
-                <p className="mt-1 text-[10px] font-bold text-white/70">
-                  {t("lobby.spectators", { count: state.spectators.length })}
-                  {": "}
-                  {state.spectators.map((s) => s.displayName).join(", ")}
-                </p>
-              )}
-              {waiting && roomCode && (
-                <div className="room-code">
-                  <button type="button" className="room-code-value" onClick={copyCode} title={t("lobby.copyCode")}>
-                    {roomCode}
-                  </button>
-                  <div className="room-code-actions">
-                    <button type="button" onClick={copyCode} className="uno-btn uno-btn-yellow room-code-btn">
-                      {copied ? t("lobby.copied") : t("lobby.copyCode")}
-                    </button>
-                    <button type="button" onClick={createRoom} className="uno-btn uno-btn-blue room-code-btn">
-                      {t("lobby.newRoom")}
-                    </button>
-                  </div>
-                  <form className="room-code-join" onSubmit={submitCode}>
-                    <input
-                      value={codeInput}
-                      onChange={(e) => setCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
-                      maxLength={6}
-                      placeholder={t("lobby.joinCodePlaceholder")}
-                      className="room-code-input"
-                      aria-label={t("lobby.joinCode")}
-                      autoComplete="off"
-                      spellCheck={false}
-                    />
-                    <button type="submit" className="uno-btn uno-btn-red room-code-btn" disabled={codeInput.length < 4}>
-                      {t("lobby.join")}
-                    </button>
-                  </form>
-                </div>
-              )}
-            </div>
+          <ul className="lobby-seats">
+            {state.players.map((p) => (
+              <li key={p.discordId} className="lobby-seat">
+                <AvatarFrame id={p.frame} src={avatarSrc(p)} size="sm" />
+                <span className="lobby-seat-name">
+                  {p.isBot ? t("lobby.botName") : p.displayName || p.username}
+                </span>
+                {p.equippedTitle && (
+                  <span className="lobby-seat-title">{t(`titles.${p.equippedTitle}`)}</span>
+                )}
+                {p.isHost && <span className="lobby-host">{t("lobby.hostBadge")}</span>}
+                {p.seriesWins > 0 && (
+                  <span className="lobby-seat-score">{t("lobby.seriesScore", { count: p.seriesWins })}</span>
+                )}
+              </li>
+            ))}
+            {waiting &&
+              Array.from({ length: emptyCount }, (_, i) => (
+                <li key={`empty-${i}`} className="lobby-seat lobby-seat-empty">
+                  <span className="lobby-empty-pip">?</span>
+                  <span className="lobby-empty-label">{t("lobby.emptySeat")}</span>
+                </li>
+              ))}
+          </ul>
+          {(state.spectators || []).length > 0 && (
+            <p className="lobby-watchers">
+              {t("lobby.spectators", { count: state.spectators.length })}
+              {": "}
+              {state.spectators.map((s) => s.displayName).join(", ")}
+            </p>
+          )}
 
-            {waiting && (
-              <div className="lobby-rules-col">
-                <p className="lobby-section-label">{t("rules.presets")}</p>
-                <div className="lobby-presets">
-                  {PRESETS.map((preset) => (
+          {waiting && (
+            <div className="lobby-chips">
+              <div className="lobby-presets">
+                {PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    disabled={!isHost}
+                    onClick={() => applyPreset(preset.rules)}
+                    title={t(`rules.preset.${preset.id}Hint`)}
+                    className={`rule-card rule-card-${preset.color}`}
+                  >
+                    <span className="rule-card-face">{preset.face}</span>
+                    <span className="rule-card-name">{t(`rules.preset.${preset.id}`)}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="lobby-rules">
+                {HOUSE_RULES.map((rule) => {
+                  const on = Boolean(state.rules?.[rule.key]);
+                  return (
                     <button
-                      key={preset.id}
+                      key={rule.key}
                       type="button"
                       disabled={!isHost}
-                      onClick={() => applyPreset(preset.rules)}
-                      title={t(`rules.preset.${preset.id}Hint`)}
-                      className={`rule-card rule-card-${preset.color}`}
+                      onClick={() => toggleRule(rule.key)}
+                      title={t(rule.hint)}
+                      className={`rule-card rule-card-${rule.color} ${on ? "rule-card-on" : "rule-card-off"}`}
                     >
-                      <span className="rule-card-face">{preset.face}</span>
-                      <span className="rule-card-name">{t(`rules.preset.${preset.id}`)}</span>
+                      <span className="rule-card-face">{rule.face}</span>
+                      <span className="rule-card-name">{t(rule.label)}</span>
+                      <span className="rule-card-switch">{on ? t("lobby.ruleOn") : t("lobby.ruleOff")}</span>
                     </button>
-                  ))}
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="lobby-toolbar">
+            {waiting && roomCode && (
+              <div className="room-code">
+                <button type="button" className="room-code-value" onClick={copyCode} title={t("lobby.copyCode")}>
+                  {roomCode}
+                </button>
+                <div className="room-code-actions">
+                  <button type="button" onClick={copyCode} className="uno-btn uno-btn-yellow room-code-btn">
+                    {copied ? t("lobby.copied") : t("lobby.copyCode")}
+                  </button>
+                  <button type="button" onClick={createRoom} className="uno-btn uno-btn-blue room-code-btn">
+                    {t("lobby.newRoom")}
+                  </button>
                 </div>
-                <p className="lobby-section-label">{t("rules.title")}</p>
-                <div className="lobby-rules">
-                  {HOUSE_RULES.map((rule) => {
-                    const on = Boolean(state.rules?.[rule.key]);
-                    return (
-                      <button
-                        key={rule.key}
-                        type="button"
-                        disabled={!isHost}
-                        onClick={() => toggleRule(rule.key)}
-                        title={t(rule.hint)}
-                        className={`rule-card rule-card-${rule.color} ${on ? "rule-card-on" : "rule-card-off"}`}
-                      >
-                        <span className="rule-card-face">{rule.face}</span>
-                        <span className="rule-card-name">{t(rule.label)}</span>
-                        <span className="rule-card-switch">{on ? t("lobby.ruleOn") : t("lobby.ruleOff")}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <form className="room-code-join" onSubmit={submitCode}>
+                  <input
+                    value={codeInput}
+                    onChange={(e) => setCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6))}
+                    maxLength={6}
+                    placeholder={t("lobby.joinCodePlaceholder")}
+                    className="room-code-input"
+                    aria-label={t("lobby.joinCode")}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  <button type="submit" className="uno-btn uno-btn-red room-code-btn" disabled={codeInput.length < 4}>
+                    {t("lobby.join")}
+                  </button>
+                </form>
               </div>
             )}
-          </div>
 
-          <div className="lobby-foot">
-            {state.players.length < 2 && waiting && (
-              <p className="lobby-need">{t("lobby.needPlayers")}</p>
-            )}
-            <p className="lobby-host-line">
-              {isHost ? t("lobby.youAreHost") : t("lobby.waitingHost")}
-            </p>
-
-            <div className="lobby-actions">
-              <button type="button" onClick={invite} className="uno-btn uno-btn-blue">
-                {t("lobby.invite")}
-              </button>
-              {waiting && isHost && (
-                <button
-                  type="button"
-                  onClick={state.players.some((p) => p.isBot) ? removeBot : addBot}
-                  className="uno-btn uno-btn-yellow"
-                >
-                  {state.players.some((p) => p.isBot) ? t("lobby.kickBot") : t("lobby.callBot")}
-                </button>
+            <div className="lobby-foot">
+              {state.players.length < 2 && waiting && (
+                <p className="lobby-need">{t("lobby.needPlayers")}</p>
               )}
-              {waiting && isHost && (
-                <button
-                  type="button"
-                  onClick={startGame}
-                  disabled={state.players.length < 2}
-                  className="uno-btn uno-btn-red"
-                >
-                  {t("lobby.start")}
+              <p className="lobby-host-line">
+                {isHost ? t("lobby.youAreHost") : t("lobby.waitingHost")}
+              </p>
+              <div className="lobby-actions">
+                <button type="button" onClick={invite} className="uno-btn uno-btn-blue">
+                  {t("lobby.invite")}
                 </button>
-              )}
-              {finished && isHost && (
-                <button type="button" onClick={playAgain} className="uno-btn uno-btn-red">
-                  {t("lobby.playAgain")}
-                </button>
-              )}
+                {waiting && isHost && (
+                  <button
+                    type="button"
+                    onClick={state.players.some((p) => p.isBot) ? removeBot : addBot}
+                    className="uno-btn uno-btn-yellow"
+                  >
+                    {state.players.some((p) => p.isBot) ? t("lobby.kickBot") : t("lobby.callBot")}
+                  </button>
+                )}
+                {waiting && isHost && (
+                  <button
+                    type="button"
+                    onClick={startGame}
+                    disabled={state.players.length < 2}
+                    className="uno-btn uno-btn-red"
+                  >
+                    {t("lobby.start")}
+                  </button>
+                )}
+                {finished && isHost && (
+                  <button type="button" onClick={playAgain} className="uno-btn uno-btn-red">
+                    {t("lobby.playAgain")}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
