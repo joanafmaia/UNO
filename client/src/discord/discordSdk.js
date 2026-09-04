@@ -60,7 +60,7 @@ async function mockSession() {
  * 2. authorize (OAuth2 code)
  * 3. troca o code no backend por access_token
  * 4. authenticate
- * 5. captura channel_id do canal de voz + locale do cliente
+ * 5. captura channel_id do canal (texto ou voz) + locale do cliente
  */
 export async function setupDiscord() {
   const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID;
@@ -94,7 +94,7 @@ export async function setupDiscord() {
   const auth = await discordSdk.commands.authenticate({ access_token });
   if (!auth) throw new Error("Authenticate command failed");
 
-  let channelName = "Voice";
+  let channelName = "Canal";
   const channelId = sdkChannelId;
   if (channelId && discordSdk.guildId) {
     try {

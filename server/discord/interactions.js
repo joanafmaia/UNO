@@ -5,9 +5,6 @@ import {
 } from "discord-interactions";
 
 const COMMAND = "playuno";
-/** Canais onde o Discord deixa abrir Activities. */
-const ACTIVITY_CHANNELS = new Set([2, 13]);
-/** Tipo 12 — algumas versões antigas do pacote não exportavam o enum. */
 const LAUNCH_ACTIVITY = InteractionResponseType.LAUNCH_ACTIVITY || 12;
 
 function publicKey() {
@@ -43,14 +40,6 @@ export function createInteractionsHandler() {
           const name = interaction.data?.name;
           if (name === COMMAND) {
             const channelType = interaction.channel?.type;
-            if (channelType != null && !ACTIVITY_CHANNELS.has(channelType)) {
-              console.info(`[UNO] /playuno recusado — canal tipo ${channelType} (precisa de voz)`);
-              return res.json(
-                ephemeral(
-                  "Entra num **canal de voz** e usa `/playuno` **aí** (no chat desse canal). A mesa de UNO só abre em voz."
-                )
-              );
-            }
             console.info(`[UNO] /playuno → launch activity (canal ${channelType ?? "desconhecido"})`);
             return res.json({ type: LAUNCH_ACTIVITY });
           }

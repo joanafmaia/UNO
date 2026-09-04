@@ -6,7 +6,7 @@
     "loadingGame": "Joining the table…",
     "mockMode": "Development mode (outside Discord)",
     "channel": "Channel",
-    "unknownChannel": "Voice channel"
+    "unknownChannel": "Channel"
   },
   "tabs": {
     "table": "Table",

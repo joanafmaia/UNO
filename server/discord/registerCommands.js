@@ -1,8 +1,22 @@
 const API = "https://discord.com/api/v10";
 
-/** Entry point da Activity: o Discord abre a mesa sem passar pelo nosso servidor. */
-const PLAYUNO_ENTRY = {
+/** Slash /playuno — abre a mesa no canal onde foi escrito (texto ou voz). */
+const PLAYUNO_SLASH = {
   name: "playuno",
+  description: "Abre a mesa de UNO neste canal",
+  type: 1,
+  integration_types: [0, 1],
+  contexts: [0, 1, 2],
+  description_localizations: {
+    "pt-BR": "Abre a mesa de UNO neste canal",
+    "en-US": "Open the UNO table in this channel",
+    "en-GB": "Open the UNO table in this channel",
+  },
+};
+
+/** App Launcher: o Discord abre a mesa e publica o convite no canal. */
+const PLAYUNO_ENTRY = {
+  name: "launch",
   description: "Abre a mesa de UNO",
   type: 4,
   handler: 2,
@@ -64,31 +78,12 @@ async function clearGuildOverrides(auth) {
   return ok;
 }
 
-async function registerGlobalEntryPoint(auth) {
-  const commands = await discord(`/applications/${auth.appId}/commands`, auth.token);
-  const list = Array.isArray(commands) ? commands : [];
-  const chat = list.find((c) => c.name === "playuno" && c.type === 1);
-  const entry = list.find((c) => c.type === 4);
-
-  if (chat) {
-    await discord(`/applications/${auth.appId}/commands/${chat.id}`, auth.token, { method: "DELETE" });
-    console.log("[UNO] Removido /playuno antigo (slash)");
-  }
-
-  if (entry) {
-    await discord(`/applications/${auth.appId}/commands/${entry.id}`, auth.token, {
-      method: "PATCH",
-      body: PLAYUNO_ENTRY,
-    });
-    console.log("[UNO] Entry point da Activity → /playuno (o Discord abre a mesa)");
-    return;
-  }
-
+async function registerGlobalCommands(auth) {
   await discord(`/applications/${auth.appId}/commands`, auth.token, {
-    method: "POST",
-    body: PLAYUNO_ENTRY,
+    method: "PUT",
+    body: [PLAYUNO_SLASH, PLAYUNO_ENTRY],
   });
-  console.log("[UNO] Entry point /playuno criado");
+  console.log("[UNO] /playuno (slash, qualquer canal) + App Launcher registados");
 }
 
 export async function registerPlayUnoCommand() {
@@ -99,9 +94,9 @@ export async function registerPlayUnoCommand() {
   }
 
   try {
-    await registerGlobalEntryPoint(auth);
+    await registerGlobalCommands(auth);
   } catch (err) {
-    console.error("[UNO] Falha a registar o entry point /playuno:", err.details || err.message);
+    console.error("[UNO] Falha a registar /playuno:", err.details || err.message);
     console.error("[UNO] Confirma Activities → Enable Activities no Developer Portal");
     return false;
   }

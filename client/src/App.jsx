@@ -41,8 +41,16 @@ function Shell() {
         </div>
         <Header tab={tab} onTab={setTab} />
         {tab === "table" && <GameTable />}
-        {tab === "profile" && <Profile />}
-        {tab === "leaderboard" && <Leaderboard />}
+        {tab === "profile" && (
+          <div className="app-page">
+            <Profile />
+          </div>
+        )}
+        {tab === "leaderboard" && (
+          <div className="app-page">
+            <Leaderboard />
+          </div>
+        )}
       </div>
     </GameProvider>
   );

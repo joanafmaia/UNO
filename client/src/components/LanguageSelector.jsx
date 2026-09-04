@@ -13,7 +13,7 @@ export default function LanguageSelector() {
           locale === "pt" ? "border-black bg-uno-yellow text-black shadow-[0_2px_0_#111]" : "border-white/40 opacity-70 hover:opacity-100"
         }`}
       >
-        🇵🇹 PT
+        🇵🇹 <span className="lang-code">PT</span>
       </button>
       <button
         type="button"
@@ -23,7 +23,7 @@ export default function LanguageSelector() {
           locale === "en" ? "border-black bg-uno-yellow text-black shadow-[0_2px_0_#111]" : "border-white/40 opacity-70 hover:opacity-100"
         }`}
       >
-        🇬🇧 EN
+        🇬🇧 <span className="lang-code">EN</span>
       </button>
     </div>
   );

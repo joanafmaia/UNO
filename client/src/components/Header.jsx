@@ -22,8 +22,8 @@ export default function Header({ tab, onTab }) {
     : avatarUrl(player?.selected_avatar);
 
   return (
-    <header className="app-header flex flex-col gap-2 px-4 pt-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <header className="app-header flex flex-shrink-0 flex-col gap-1 px-4 pt-2">
+      <div className="app-header-bar flex flex-wrap items-center justify-between gap-3">
         <div className="app-header-brand flex items-center gap-3">
           <UnoLogo size="sm" />
           <div className="app-header-meta">
@@ -41,7 +41,7 @@ export default function Header({ tab, onTab }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="app-header-tools flex items-center gap-3">
           {isYourTurn && (
             <span className="rounded-full border-2 border-black bg-uno-yellow px-3 py-1 text-xs font-black uppercase text-black shadow-[0_3px_0_#111]">
               {t("header.yourTurn")}

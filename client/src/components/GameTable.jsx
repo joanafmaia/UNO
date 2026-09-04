@@ -88,7 +88,7 @@ export default function GameTable() {
 
   if (!state) {
     return (
-      <div className="grid min-h-[420px] place-items-center">
+      <div className="grid min-h-0 flex-1 place-items-center">
         <p className="animate-pulse font-display text-2xl tracking-wide">{t("app.loadingGame")}</p>
       </div>
     );
@@ -128,7 +128,7 @@ export default function GameTable() {
   };
 
   return (
-    <div className={`relative flex flex-col ${fx === "plus4" || fx === "catch" ? "table-shake" : ""}`}>
+    <div className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${fx === "plus4" || fx === "catch" ? "table-shake" : ""}`}>
       <FxOverlay fx={fx} event={state.lastEvent} />
 
       {notice && (
@@ -241,7 +241,7 @@ export default function GameTable() {
               <p className="text-center text-sm text-uno-yellow">{t("game.mustPlayDrawn")}</p>
             )}
 
-            <div className="flex justify-center gap-2">
+            <div className="hand-sort">
               <button
                 type="button"
                 onClick={() => setSortMode("color")}

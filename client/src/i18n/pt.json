@@ -6,7 +6,7 @@
     "loadingGame": "A entrar na mesa…",
     "mockMode": "Modo de desenvolvimento (fora do Discord)",
     "channel": "Canal",
-    "unknownChannel": "Canal de voz"
+    "unknownChannel": "Canal"
   },
   "tabs": {
     "table": "Mesa",
