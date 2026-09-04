@@ -39,7 +39,7 @@ export default function HandFan({
             style={{
               zIndex: hot ? 40 : i + 1,
               "--fan-rot": `${rot}deg`,
-              marginLeft: i === 0 ? 0 : n > 10 ? "-2.65rem" : "-2.15rem",
+              "--fan-overlap": n > 10 ? "-2.65rem" : "-2.15rem",
             }}
           >
             <Card
