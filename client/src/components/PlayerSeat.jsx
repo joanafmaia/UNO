@@ -5,7 +5,7 @@ import CardBack from "./CardBack.jsx";
 export default function PlayerSeat({ player, isYou, t, onCatch, showStack, compact, chip }) {
   const title = player.equippedTitle ? t(`titles.${player.equippedTitle}`) : null;
   const name = player.isBot ? t("lobby.botName") : isYou ? t("game.you") : player.displayName || player.username;
-  const catchBtn = player.vulnerable && !isYou && (
+  const catchBtn = player.vulnerable && !isYou && onCatch && (
     <button
       type="button"
       onClick={() => onCatch(player.discordId)}

@@ -16,13 +16,12 @@ export default function Header({ tab, onTab }) {
   const { t } = useI18n();
   const { session, player } = useAuth();
   const { state, muted, toggleMute } = useGame();
-  const isYourTurn = state?.currentPlayerId === session?.user.discordId && state?.status === "playing";
   const avatar = isAllowedAvatarUrl(session?.user.avatarUrl)
     ? session.user.avatarUrl
     : avatarUrl(player?.selected_avatar);
 
   return (
-    <header className="app-header flex flex-shrink-0 flex-col gap-1 px-4 pt-2">
+    <header className={`app-header flex flex-shrink-0 flex-col gap-1 px-4 pt-2 ${state?.status === "playing" ? "app-header-play" : ""}`}>
       <div className="app-header-bar flex flex-wrap items-center justify-between gap-3">
         <div className="app-header-brand flex items-center gap-3">
           <UnoLogo size="sm" />
@@ -42,11 +41,6 @@ export default function Header({ tab, onTab }) {
         </div>
 
         <div className="app-header-tools flex items-center gap-3">
-          {isYourTurn && (
-            <span className="rounded-full border-2 border-black bg-uno-yellow px-3 py-1 text-xs font-black uppercase text-black shadow-[0_3px_0_#111]">
-              {t("header.yourTurn")}
-            </span>
-          )}
           <LanguageSelector />
           <button
             type="button"
@@ -56,7 +50,7 @@ export default function Header({ tab, onTab }) {
           >
             {muted ? "🔇" : "🔊"}
           </button>
-          <div className="flex items-center gap-2 rounded-full border-2 border-white bg-black/35 py-1 pl-1 pr-3 shadow-[0_3px_0_#111]">
+          <div className="app-header-user flex items-center gap-2 rounded-full border-2 border-white bg-black/35 py-1 pl-1 pr-3 shadow-[0_3px_0_#111]">
             <AvatarFrame id={player?.selected_frame} src={avatar} size="sm" />
             <div className="leading-tight">
               <span className="block text-sm font-black">{player?.nickname || session?.user.username}</span>

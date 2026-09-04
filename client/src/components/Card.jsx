@@ -21,7 +21,7 @@ function faceLabel(card, t) {
   return FACE[card.value] || t(`cards.${card.value}`);
 }
 
-export default function Card({ card, selected, playable, jumpable, small, onClick }) {
+export default function Card({ card, selected, playable, jumpable, small, onClick, title }) {
   const { t } = useI18n();
   if (!card) {
     return (
@@ -37,6 +37,7 @@ export default function Card({ card, selected, playable, jumpable, small, onClic
   return (
     <button
       type="button"
+      title={title}
       disabled={!onClick}
       onClick={onClick}
       className={`uno-card ${COLOR_CLASS[card.color] || "uno-card-red"} ${small ? "uno-card-sm" : ""}

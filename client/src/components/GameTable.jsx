@@ -45,7 +45,7 @@ function TurnTimer({ deadline }) {
   const seconds = (left / 1000).toFixed(1);
   const danger = left < 3000;
   return (
-    <span className={`rounded-full px-3 py-1 font-display text-sm font-black ${danger ? "bg-uno-red animate-pulse" : "bg-black/50"}`}>
+    <span className={`table-hud-chip ${danger ? "table-hud-danger animate-pulse" : ""}`}>
       {seconds}s
     </span>
   );
@@ -162,16 +162,14 @@ export default function GameTable() {
       )}
 
       {!waiting && !finished && (
-        <div className="table-play">
+        <div className={`table-play ${yourTurn ? "table-play-your-turn" : ""}`}>
           <div className="table-play-hud">
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {state.rules?.blitz && <TurnTimer deadline={state.turnDeadline} />}
-              {state.drawStack > 0 && (
-                <span className="rounded-full bg-uno-red px-3 py-1 text-xs font-black">
-                  {t("game.stack", { count: state.drawStack })}
-                </span>
-              )}
-            </div>
+            {state.rules?.blitz && <TurnTimer deadline={state.turnDeadline} />}
+            {state.drawStack > 0 && (
+              <span className="table-hud-chip table-hud-stack">
+                {t("game.stack", { count: state.drawStack })}
+              </span>
+            )}
             {state.lastEvent && (
               <p className="table-play-event">{eventText(state.lastEvent, t)}</p>
             )}
@@ -296,20 +294,18 @@ export default function GameTable() {
       )}
 
       {choosing && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70">
-          <div className="rounded-[2rem] border-4 border-white bg-[#111] p-6 text-center shadow-[0_8px_0_#111]">
-            <h3 className="mb-4 font-display text-2xl tracking-wide">{t("game.chooseColor")}</h3>
-            <div className="flex gap-3">
+        <div className="table-modal">
+          <div className="table-modal-card">
+            <h3>{t("game.chooseColor")}</h3>
+            <div className="table-color-row">
               {COLORS.map((color) => (
-                <button
+                <Card
                   key={color}
-                  type="button"
-                  onClick={() => chooseColor(color)}
-                  className={`relative h-16 w-16 rounded-full border-4 border-white ${COLOR_BTN[color]}`}
+                  small
                   title={t(`colors.${color}`)}
-                >
-                  <span className={`color-mark color-mark-${color} color-mark-picker`} />
-                </button>
+                  card={{ color, type: "wild", value: "wild" }}
+                  onClick={() => chooseColor(color)}
+                />
               ))}
             </div>
           </div>
@@ -317,34 +313,35 @@ export default function GameTable() {
       )}
 
       {swapping && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70">
-          <div className="rounded-[2rem] border-4 border-white bg-[#111] p-6 text-center shadow-[0_8px_0_#111]">
-            <h3 className="mb-4 font-display text-2xl tracking-wide">{t("game.chooseSwap")}</h3>
-            <div className="flex flex-wrap justify-center gap-2">
+        <div className="table-modal">
+          <div className="table-modal-card">
+            <h3>{t("game.chooseSwap")}</h3>
+            <div className="table-swap-row">
               {others.map((p) => (
                 <button
                   key={p.discordId}
                   type="button"
                   onClick={() => chooseSwap(p.discordId)}
-                  className="rounded-full bg-white/10 px-4 py-2 font-bold"
+                  className="table-swap-pick"
                 >
-                  {p.displayName}
+                  <PlayerSeat player={p} t={t} chip />
                 </button>
               ))}
             </div>
           </div>
         </div>
       )}
+
       {challenging && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/70">
-          <div className="rounded-[2rem] border-4 border-white bg-[#111] p-6 text-center shadow-[0_8px_0_#111]">
-            <h3 className="mb-2 font-display text-2xl tracking-wide">{t("game.challengeTitle")}</h3>
-            <p className="mb-4 max-w-xs text-sm font-bold text-white/75">{t("game.challengeHint")}</p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <button type="button" onClick={challengePlus4} className="uno-btn uno-btn-red">
+        <div className="table-modal">
+          <div className="table-modal-card">
+            <h3>{t("game.challengeTitle")}</h3>
+            <p className="table-modal-hint">{t("game.challengeHint")}</p>
+            <div className="table-modal-actions">
+              <button type="button" onClick={challengePlus4} className="uno-btn uno-btn-red uno-btn-deal">
                 {t("game.challengeYes")}
               </button>
-              <button type="button" onClick={drawCard} className="uno-btn uno-btn-yellow">
+              <button type="button" onClick={drawCard} className="uno-btn uno-btn-yellow uno-btn-sm">
                 {t("game.challengeNo")}
               </button>
             </div>

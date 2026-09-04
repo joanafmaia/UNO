@@ -22,74 +22,51 @@ export default function Leaderboard() {
     load();
   }, []);
 
+  const podium = rows.slice(0, 3);
+  const rest = rows.slice(3);
+  const order = podium.length === 3 ? [podium[1], podium[0], podium[2]] : podium;
+
   return (
-    <div className="mx-auto max-w-5xl p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-3xl tracking-wide drop-shadow-[0_3px_0_#111]">{t("leaderboard.title")}</h2>
-        <button
-          type="button"
-          onClick={load}
-          className="uno-btn uno-btn-yellow px-4 py-1 text-sm"
-        >
+    <div className="rank-page">
+      <div className="rank-head">
+        <h2>{t("leaderboard.title")}</h2>
+        <button type="button" onClick={load} className="uno-btn uno-btn-ghost uno-btn-sm" disabled={loading}>
           {t("leaderboard.refresh")}
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-3xl border-4 border-white bg-black/35 shadow-[0_8px_0_#111]">
-        <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="bg-white/5 text-xs uppercase tracking-wide text-white/60">
-            <tr>
-              <th className="px-4 py-3">{t("leaderboard.rank")}</th>
-              <th className="px-4 py-3">{t("leaderboard.player")}</th>
-              <th className="px-4 py-3">{t("leaderboard.wins")}</th>
-              <th className="px-4 py-3">{t("leaderboard.losses")}</th>
-              <th className="px-4 py-3">{t("leaderboard.points")}</th>
-              <th className="px-4 py-3">{t("leaderboard.titles")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {!loading && rows.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-white/50">
-                  {t("leaderboard.empty")}
-                </td>
-              </tr>
-            )}
-            {rows.map((row) => (
-              <tr key={row.discord_id} className="border-t border-white/5">
-                <td className="px-4 py-3 font-black text-uno-yellow">{row.rank}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={avatarUrl(row.selected_avatar)}
-                      alt=""
-                      className="h-8 w-8 rounded-full object-cover"
-                    />
-                    <span className="font-semibold">{row.nickname || row.username}</span>
-                    {row.equipped_title && (
-                      <span className="block text-[10px] uppercase text-uno-yellow">
-                        {t(`titles.${row.equipped_title}`)}
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-4 py-3">{row.wins}</td>
-                <td className="px-4 py-3">{row.losses}</td>
-                <td className="px-4 py-3">{row.points}</td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-1">
-                    {(row.titles || []).map((id) => (
-                      <span key={id} className="rounded-full bg-uno-red/80 px-2 py-0.5 text-[10px] font-bold">
-                        {t(`titles.${id}`)}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {!loading && rows.length === 0 && <p className="shop-empty">{t("leaderboard.empty")}</p>}
+
+      {podium.length > 0 && (
+        <ol className={`rank-podium rank-podium-${order.length}`}>
+          {order.map((row) => (
+            <li key={row.discord_id} className={`rank-podium-seat rank-place-${row.rank}`}>
+              <span className="rank-medal">{row.rank}</span>
+              <img src={avatarUrl(row.selected_avatar)} alt="" />
+              <strong>{row.nickname || row.username}</strong>
+              {row.equipped_title && <em>{t(`titles.${row.equipped_title}`)}</em>}
+              <b>{row.wins}</b>
+              <span>{t("leaderboard.wins")}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {rest.length > 0 && (
+        <ol className="rank-list">
+          {rest.map((row) => (
+            <li key={row.discord_id}>
+              <span className="rank-list-pos">{row.rank}</span>
+              <img src={avatarUrl(row.selected_avatar)} alt="" />
+              <div className="rank-list-who">
+                <strong>{row.nickname || row.username}</strong>
+                {row.equipped_title && <em>{t(`titles.${row.equipped_title}`)}</em>}
+              </div>
+              <span className="rank-list-wins">{row.wins}</span>
+            </li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }

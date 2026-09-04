@@ -39,19 +39,19 @@ export default function VictoryScreen({
         <p className="text-xs font-black uppercase tracking-[0.25em] text-uno-yellow">
           {seriesOver ? t("victory.seriesOver") : t("victory.roundOver")}
         </p>
-        <h2 className="mt-2 font-display text-5xl font-black uppercase leading-none drop-shadow-[0_4px_0_#111]">
+        <h2 className="victory-name">
           {winner?.isBot ? t("lobby.botName") : winner?.displayName || t("victory.someone")}
         </h2>
-        <p className="mt-3 text-lg font-black">
+        <p className="victory-sub">
           {seriesOver
             ? t("victory.champion")
             : t("victory.wonRound", { points: state.lastRoundPoints || 0 })}
         </p>
 
         {unlocks.length > 0 && (
-          <div className="mt-5 rounded-2xl border-2 border-uno-yellow bg-black/40 px-4 py-3">
+          <div className="mt-3 rounded-2xl border-2 border-uno-yellow bg-black/40 px-4 py-2">
             <p className="text-xs font-black uppercase tracking-widest text-uno-yellow">{t("victory.unlocked")}</p>
-            <ul className="mt-2 flex flex-wrap justify-center gap-2">
+            <ul className="mt-1 flex flex-wrap justify-center gap-2">
               {unlocks.map((item) => (
                 <li key={`${item.kind}-${item.id}`} className="rounded-full bg-white/10 px-3 py-1 text-xs font-black">
                   {unlockLabel(item)}
@@ -61,7 +61,7 @@ export default function VictoryScreen({
           </div>
         )}
         {showSeries && (
-          <ul className="mt-5 flex flex-wrap justify-center gap-2">
+          <ul className="mt-3 flex flex-wrap justify-center gap-2">
             {state.players.map((p) => (
               <li
                 key={p.discordId}
@@ -87,7 +87,7 @@ export default function VictoryScreen({
         </p>
 
         {isHost && (
-          <button type="button" onClick={playAgain} className="uno-btn uno-btn-red mt-5">
+          <button type="button" onClick={playAgain} className="uno-btn uno-btn-red uno-btn-deal mt-4">
             {seriesOver ? t("victory.newSeries") : t("lobby.playAgain")}
           </button>
         )}
